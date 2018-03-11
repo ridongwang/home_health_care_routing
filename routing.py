@@ -1,6 +1,7 @@
 import random
 from operator import itemgetter
 from math import sqrt
+import pprint
 
 def read_data():
     """
@@ -71,7 +72,7 @@ class RoutingProblem:
             """
             Generates random patient data for testing.
             """
-            for i in range(10):
+            for i in range(150):
                 # patient_data = PatientData()
                 # patient_data.window_open = random.randint(0, 460)
                 earliest_time = random.randint(0, 460)
@@ -136,11 +137,22 @@ def next_task_eligibility(assignment, crew_dict):
         print("Current crew location is ", v[-1][4], " and next assigment is at ", assignment[4])
         dist = distance(assignment[4],v[-1][4])
         time_to_reach = dist/routing.average_speed * 60
-        if crew_time_spent[k] + time_to_reach >= assignment[0]:
-            output.append([True, dist, time_to_reach])
-        else:
+        print("Crew: ", k, "Distance: ", dist, "Time to reach: ", time_to_reach)
+        print("Current time spent by crew: ", crew_time_spent[k], "ETA at this assignment: ", crew_time_spent[k] + time_to_reach)
+        print("Assignment's start time:", assignment[0])
+        if crew_time_spent[k] + time_to_reach <= assignment[0]:
+            print("Next Task Eligibility, Condition One Satisfied")
+            output.append([True, dist, time_to_reach, assignment[0] - time_to_reach])
+        elif crew_time_spent[k] + time_to_reach >= assignment[1]:
+            print("Next Task Eligibility, Condition Two Satisfied")
             output.append([False, dist, time_to_reach])
-    
+        elif crew_time_spent[k] + time_to_reach >= assignment[0] and crew_time_spent[k] + time_to_reach <= assignment[1] - assignment[2]:
+            print("Next Task Eligibility, Condition Three Satisfied")
+            output.append([True, dist, time_to_reach])
+        # elif crew_time_spent[k] + time_to_reach >= assignment[0] and crew_time_spent[k] + time_to_reach <= assignment[0] - assignment[2]:
+        #     print("Next Task Eligibility, Condition Four Satisfied")
+        #     output.append([True, dist, time_to_reach])
+
     return output 
 
 
@@ -150,23 +162,43 @@ def create_schedule(crew_dict):
     Creates the day scedule for the crew based on the crew_dict passed.
     """
     # crew_dict = {k:[v] for k,v in enumerate(pick_initial_earliest_start_times())}
-    assigned_assignements = []
-    for i in crew_dict.values():
-        assigned_assignements.extend(i)
-        
+    assigned_assignements = crew_dict.values()        
     rest_of_items  = [item for item in routing.list_patient_data if item not in assigned_assignements]
+    # rest_of_items = set(assigned_assignements).intersection(routing.list_patient_data)
     print("Rest of the items are as follows:", rest_of_items)
+    prev_len = len(rest_of_items)
     if len(rest_of_items) != 0:
         rest_of_items = sorted(rest_of_items, key=itemgetter(0))
         print("\nNext assignment to be taken ", rest_of_items[0])
         output = next_task_eligibility(rest_of_items[0],crew_dict)
         print("\nTask eligibility for each crew is ", output)
         least_time = min(x[2] for x in output) 
-        for i in output:
-            if i[0] is True and i[2] == least_time:
-                assigns = crew_dict[i]
+        for idx, val in enumerate(output):
+            # print("Schedule loop Output ", idx)
+            # print("Crew Dict right now ", crew_dict)
+            if val[0] is True and val[2] == least_time:
+                print("Crew with least time ", idx)
+                assigns = crew_dict.get(idx)
+                print("Crew current value ", assigns)
                 assigns.append(rest_of_items[0])
-                crew_dict[i] = assigns
+                print("Crew value with this assignment", assigns)
+                crew_dict[idx] = assigns
+                print("Crew time before this assignment ",crew_time_spent[idx])
+                if len(val) == 4:
+                    print("Starting after a rest and finishing the assignment ", val[3] + rest_of_items[0][-3])
+                    print("Assignment duration ", rest_of_items[0][-3])
+                    crew_time_spent[idx] = val[3] + rest_of_items[0][-3]
+                else:
+                    print("Generally starting and finishing the assignment ", crew_time_spent[idx] + val[2] + rest_of_items[0][-2])
+                    crew_time_spent[idx] = crew_time_spent[idx] + val[2] + rest_of_items[0][-2]
+                print("Crew time after this assignment ",crew_time_spent[idx])
+                break
+
+         
+        
+        
+        
+
         create_schedule(crew_dict)
     return crew_dict
 
@@ -205,8 +237,9 @@ print("\nNow the time spend by crew until it finishes the location is ", crew_ti
 
 print("\nDictionary being passed to create schedule is ", crew_dict)  
 sched = create_schedule(crew_dict)
-
-
+pp = pprint.PrettyPrinter(indent=4)
+pp.pprint(sched)
+print(crew_time_spent)
            
 
 

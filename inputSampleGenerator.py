@@ -34,9 +34,11 @@ class DayJobsInstance:
         for i in range(0, count):
             patient = PatientData()
             patient.index = i
-            patient.window_open = random.randint(0, 460)
             patient.care_duration = random.choice(length_of_visit_choices)
-            patient.window_close =  random.randint(patient.window_open, 480)
+            window_open_stopage = self.work_minutes - patient.care_duration
+            patient.window_open = random.randint(0, window_open_stopage)
+            window_close_initiate = patient.window_open + patient.care_duration
+            patient.window_close =  random.randint(window_close_initiate, self.work_minutes)
             patient.patient_location = self.generate_random_location_on_map()
             patient.patient_priority = random.choice([1,2,3])
             patient.type_of_patient = random.choice([1001, 1004, 1005, 1007, 1009])

@@ -1,4 +1,5 @@
 import tkinter as tk
+from datamodels import PatientData
 
 
 def show_full_schedule():

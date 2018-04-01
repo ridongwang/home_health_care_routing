@@ -103,7 +103,7 @@ for idx, val in enumerate(number_of_patients):
 print(len(list_of_instances))
 
 for idx, val in enumerate(list_of_instances):
-    filename = "instances_" + str(idx) + ".txt"
+    filename = "instances_" + str(idx + 1) + ".txt"
     download_dir = filename 
     text = open(download_dir, "w")
     # job = DayJobsInstance()

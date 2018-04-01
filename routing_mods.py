@@ -15,34 +15,34 @@ class Routing:
         self.solutions = []
         self.sched_output = ScheduleOutput()
     
-    def pick_initial_earliest_start_times(self):
+    def pick_initial_earliest_start_times(self, patient_list):
         """
         Find the first location for each crew where we have to reach the earliest.
         """
-        early_start_list = sorted(self.job.list_of_patients, key=lambda x: x.window_open)
+        early_start_list = sorted(patient_list, key=lambda x: x.window_open)
         return early_start_list[:int(self.job.number_of_crew)]
     
-    def pick_initial_nearest_locations(self):
+    def pick_initial_nearest_locations(self, patient_list):
         """
         Find the first location for each crew which is nearest to the clinic.
         """
-        near_start_list = sorted(self.job.list_of_patients, key=lambda k: sqrt((k.patient_location[0] - self.job.clinic_location[0])**2 + (k.patient_location[1] - self.job.clinic_location[1])**2))
+        near_start_list = sorted(patient_list, key=lambda k: sqrt((k.patient_location[0] - self.job.clinic_location[0])**2 + (k.patient_location[1] - self.job.clinic_location[1])**2))
         locations_to_visit  = [i.patient_location for i in near_start_list]
         return near_start_list[:int(self.job.number_of_crew)]
 
-    def pick_initial_minimal_duration_time(self):
+    def pick_initial_minimal_duration_time(self, patient_list):
         """
         Find the first location for each crew where we can finish the job the earliest.
         """
-        minimal_duration_list = sorted(self.job.list_of_patients, key=lambda x: x.window_open + x.care_duration)
+        minimal_duration_list = sorted(patient_list, key=lambda x: x.window_open + x.care_duration)
         
         return minimal_duration_list[:int(self.job.number_of_crew)]
     
-    def pick_initial_high_priority_patients(self):
+    def pick_initial_high_priority_patients(self, patient_list):
         """
         Find the high priority patients which should be attended first.
         """
-        high_priority_list = sorted(self.job.list_of_patients, key=lambda x: x.patient_priority)
+        high_priority_list = sorted(patient_list, key=lambda x: x.patient_priority)
 
         return high_priority_list[:int(self.job.number_of_crew)]
     
@@ -197,7 +197,7 @@ class Routing:
     
     def create_multiple_solutions(self):
         
-        initial_assignments_combinations = [self.pick_initial_nearest_locations(), self.pick_initial_minimal_duration_time(), self.pick_initial_earliest_start_times(), self.pick_initial_high_priority_patients()]
+        initial_assignments_combinations = [self.pick_initial_nearest_locations(self.job.list_of_patients), self.pick_initial_minimal_duration_time(self.job.list_of_patients), self.pick_initial_earliest_start_times(self.job.list_of_patients), self.pick_initial_high_priority_patients(self.job.list_of_patients)]
         for list in initial_assignments_combinations:
             self.initialize_crew()
             self.assign_first_jobs_crew(list)

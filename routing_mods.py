@@ -20,7 +20,7 @@ class Routing:
         Find the first location for each crew where we have to reach the earliest.
         """
         early_start_list = sorted(patient_list, key=lambda x: x.window_open)
-        return early_start_list[:int(self.job.number_of_crew)]
+        return early_start_list[:int(self.job.number_of_crew)] 
     
     def pick_initial_nearest_locations(self, patient_list):
         """
@@ -103,7 +103,7 @@ class Routing:
                 rest_of_items.append(item)
 
         
-        if len(rest_of_items) != 0:
+        if len(rest_of_items) != 0: 
             assignment = sorted(rest_of_items, key=lambda x: x.window_close)[0]
             output = self.next_task_eligibility(assignment, self.crew_list)
             if len(output) != 0:
@@ -158,6 +158,14 @@ class Routing:
         
         return list_of_patients
     
+    def show_current_location_crew(self, time):
+        list_current_loc = []
+        sched_output = self.solutions[0]
+        for crew in sched_output.crew_output:
+            list_current_loc.append(crew.current_location)
+        
+        return list_current_loc
+    
     def remove_remaining_visits(self, time):
         list_of_patients = []
         sched_output = self.solutions[0]
@@ -176,6 +184,21 @@ class Routing:
         self.solutions.insert(0, self.sched_output)
         self.sched_output = ScheduleOutput()
         # self.solutions = sorted(self.solutions, key=lambda x:x.patients_left)
+        # self.solutions = sorted(self.solutions, key=lambda x:x.patients_left)
+        for i in self.solutions:
+            print(i, " has", i.patients_left, " patients left.\n")
+
+    def check_patient_assigned(patient):
+        assigned_assignements = []
+        for i in self.solutions[0].crew_output:
+            for crew in i:
+                assigned_assignements.extend(j.list_of_patients)
+        
+        if patient in assigned_assignements:
+            return True
+        else:
+            return False
+        
          
     def initialize_crew(self):
         self.crew_list = []

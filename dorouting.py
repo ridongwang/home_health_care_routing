@@ -13,9 +13,6 @@ class RunSingleProblem:
 
         self.file_read.read_initialize_dayjob(int)
         self.routing_problem.job = self.file_read.day_job
-        # routing_problem.initialize_crew()
-        # routing_problem.assign_first_jobs_crew()
-        # routing_problem.create_schedule()
         self.routing_problem.create_multiple_solutions()
         self.write_to_csv(int)
         
@@ -46,5 +43,22 @@ class RunSingleProblem:
             
             print("Patient added:", add_new_patient_prompt)
 
+
+class RunMultipleProblems:
+    def __init__(self):
+        self.routing_problems = []
+        self.file_read = readwrite.ReadMultipleFileData()
+        self.csv_write = readwrite.WriteData()
+    
+    def run_problems(self):
+
+        self.file_read.read_initialize_multiple_dayjobs()
+        for idx, day_job in enumerate(self.file_read.day_jobs):
+            routing_problem = Routing()
+            routing_problem.job = day_job
+            routing_problem.create_multiple_solutions()
+            self.csv_write.write_to_csv(routing_problem, routing_problem.solutions[0].crew_output, routing_problem.solutions[0].patients_left, idx)
+        
+        
 r_s_p = RunSingleProblem()
 r_s_p.run_script()

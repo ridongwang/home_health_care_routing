@@ -21,6 +21,7 @@ class MainMenuScreen:
         self.minute_variable = tk.IntVar()
         self.minute_entry = tk.Entry(self.row)
         self.main_screen(self.row)
+        self.add_patient_button = tk.Button()
         
     
     def main_screen(self, row):
@@ -50,6 +51,8 @@ class MainMenuScreen:
             button.pack(side='left')
             buttons.append(button)
         return buttons
+
+        self.add_patient_button = buttons[-1]
     
     def return_command_for_button(self, idx):
         if idx == 0:
@@ -68,12 +71,13 @@ class MainMenuScreen:
     
     def show_full_schedule(self):
         print("Showing Full Schedule")
+        p_list = self.r_s_p.routing_problem.show_full_schedule()
 
 
     def show_completed_visits(self):
         self.minute_variable = int(self.minute_entry.get())
         p_list = self.r_s_p.routing_problem.show_completed_visits(self.minute_variable)
-        print(len(p_list))
+        # print(len(p_list))
         
 
 
@@ -95,14 +99,12 @@ class MainMenuScreen:
 
 
     def add_new_patient(self):
+        self.add_patient_button.configure(state="disabled")
         add_new = AddNewPatient(self.root, self.patient, self.time)
         # add_new.display_screen()
         print("Came here")
         self.r_s_p.routing_problem.add_new_patient(self.patient, self.time)
         
-    
-    
-
 
 class AddNewPatient:
 
@@ -200,7 +202,7 @@ class AddNewPatient:
         self.patient.patient_location = (self.location_x, self.location_y)
         
         self.time = self.current_time
-        self.root.destroy()
+        # self.root.destroy()
         
 
     

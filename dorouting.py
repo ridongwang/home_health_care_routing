@@ -59,6 +59,6 @@ class RunMultipleProblems:
             routing_problem.create_multiple_solutions()
             self.csv_write.write_to_csv(routing_problem, routing_problem.solutions[0].crew_output, routing_problem.solutions[0].patients_left, idx)
         
-        
-r_s_p = RunSingleProblem()
-r_s_p.run_script()
+
+# r_s_p = RunSingleProblem()
+# r_s_p.run_script()

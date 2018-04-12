@@ -129,21 +129,35 @@ class Routing:
             self.sched_output.patients_left = 0
 
     def show_completed_visits(self, time):
+        # time = int(time)
         list_of_patients = []
         sched_output = self.solutions[0]
         for crew in sched_output.crew_output:
             for patient in crew.list_of_patients:
                 if patient.etd < time:
+                    print(patient.data_as_string())
                     list_of_patients.append(patient)
         
         return list_of_patients
+    
+    def show_full_schedule(self):
+        list_of_patients = []
+        sched_output = self.solutions[0]
+        for crew in sched_output.crew_output:
+            for patient in crew.list_of_patients:
+                    print(patient.data_as_string())
+                    list_of_patients.append(patient)
+        
+        return list_of_patients
+
     
     def show_ongoing_visits(self, time):
         list_of_patients = []
         sched_output = self.solutions[0]
         for crew in sched_output.crew_output:
             for patient in crew.list_of_patients:
-                if patient.eta <= time and patient.etd >= time:
+                if int(patient.eta) <= time and int(patient.etd) >= time:
+                    print(patient.data_as_string())
                     list_of_patients.append(patient)
         
         return list_of_patients
@@ -153,7 +167,8 @@ class Routing:
         sched_output = self.solutions[0]
         for crew in sched_output.crew_output:
             for patient in crew.list_of_patients:
-                if patient.eta > time:
+                if int(patient.eta) > time:
+                    print(patient.data_as_string())
                     list_of_patients.append(patient)
         
         return list_of_patients
@@ -176,6 +191,21 @@ class Routing:
                     crew.list_of_patients.remove(patient) 
             if not crew.list_of_patients:
                 crew.current_location = (0,0)
+    
+    def check_patient_assigned(self, patient):
+        assigned_assignements = []
+        patient_assigned = False
+        for i in self.solutions[0].crew_output:
+            # for crew in i:
+            assigned_assignements.extend(i.list_of_patients)
+        
+        if patient in assigned_assignements:
+            patient_assigned = True
+        
+        if self.solutions[0].patients_left > self.solutions[1].patients_left:
+            patient_assigned = False
+        
+        return patient_assigned
         
     def add_new_patient(self, patient, time):
         self.remove_remaining_visits(time)
@@ -187,17 +217,15 @@ class Routing:
         # self.solutions = sorted(self.solutions, key=lambda x:x.patients_left)
         for i in self.solutions:
             print(i, " has", i.patients_left, " patients left.\n")
-
-    def check_patient_assigned(patient):
-        assigned_assignements = []
-        for i in self.solutions[0].crew_output:
-            for crew in i:
-                assigned_assignements.extend(j.list_of_patients)
         
-        if patient in assigned_assignements:
-            return True
-        else:
-            return False
+        can_we_add_patient = self.check_patient_assigned(patient)
+        if can_we_add_patient == False:
+            print("Sorry, we can't add this patient.")
+        elif can_we_add_patient == True:
+            print("Patient successfully added to schedule.")
+
+    
+        
         
          
     def initialize_crew(self):
@@ -236,53 +264,53 @@ class Routing:
 
 
 
-def run_single_problem(int):
+# def run_single_problem(int):
 
-    routing_problem = Routing()
-    routing_problem.job = read_initialize_dayjob(int)
-    # routing_problem.initialize_crew()
-    # routing_problem.assign_first_jobs_crew()
-    # routing_problem.create_schedule()
-    routing_problem.create_multiple_solutions()
-    write_to_csv(routing_problem, routing_problem.solutions[0].crew_output, routing_problem.solutions[0].patients_left, 0)
+#     routing_problem = Routing()
+#     routing_problem.job = read_initialize_dayjob(int)
+#     # routing_problem.initialize_crew()
+#     # routing_problem.assign_first_jobs_crew()
+#     # routing_problem.create_schedule()
+#     routing_problem.create_multiple_solutions()
+#     write_to_csv(routing_problem, routing_problem.solutions[0].crew_output, routing_problem.solutions[0].patients_left, 0)
 
-def run_all_problems():
-    day_jobs = read_initialize_multiple_dayjobs()
-    for idx, i in enumerate(day_jobs):
-        routing_problem = Routing()
-        routing_problem.job = i
-        print("Problem to solve is:\nNumber of patients-", routing_problem.job.number_of_patients, "Number of crew-", routing_problem.job.number_of_crew)
-        # routing_problem.initialize_crew()
-        # routing_problem.assign_first_jobs_crew()
-        # routing_problem.create_schedule()
-        # write_to_csv(routing_problem, routing_problem.sched_output.crew_output, routing_problem.sched_output.patients_left, idx)
-        routing_problem.create_multiple_solutions()
-        write_to_csv(routing_problem, routing_problem.solutions[0].crew_output, routing_problem.solutions[0].patients_left, idx)
+# def run_all_problems():
+#     day_jobs = read_initialize_multiple_dayjobs()
+#     for idx, i in enumerate(day_jobs):
+#         routing_problem = Routing()
+#         routing_problem.job = i
+#         print("Problem to solve is:\nNumber of patients-", routing_problem.job.number_of_patients, "Number of crew-", routing_problem.job.number_of_crew)
+#         # routing_problem.initialize_crew()
+#         # routing_problem.assign_first_jobs_crew()
+#         # routing_problem.create_schedule()
+#         # write_to_csv(routing_problem, routing_problem.sched_output.crew_output, routing_problem.sched_output.patients_left, idx)
+#         routing_problem.create_multiple_solutions()
+#         write_to_csv(routing_problem, routing_problem.solutions[0].crew_output, routing_problem.solutions[0].patients_left, idx)
 
 # run_all_problems()
 
-def run_script():
-    welcome_message = "*Home Health Care Routing*"
-    print(welcome_message)
-    prompt_for_problems = int(input("What do you want to solve?\n1. All problems\n2. Single problem\n"))
-    if prompt_for_problems == 1:
-        run_all_problems()
-    elif prompt_for_problems == 2:
-        choose_problem = int(input("Choose one of the 20 problems(1..20):"))
-        run_single_problem(choose_problem)
-        add_new_patient_prompt = input("Would you like to add new patient?\n Enter YES to proceed else NO to quit:\n")
-        if add_new_patient_prompt == "YES":
-            current_time = input("What is the current time?\nIt should be less that patient's earliest time you will enter.:\n")
-            new_patient = PatientData()
-            new_patient.create_a_patient()
-            print(new_patient.data_as_string())
+# def run_script():
+#     welcome_message = "*Home Health Care Routing*"
+#     print(welcome_message)
+#     prompt_for_problems = int(input("What do you want to solve?\n1. All problems\n2. Single problem\n"))
+#     if prompt_for_problems == 1:
+#         run_all_problems()
+#     elif prompt_for_problems == 2:
+#         choose_problem = int(input("Choose one of the 20 problems(1..20):"))
+#         run_single_problem(choose_problem)
+#         add_new_patient_prompt = input("Would you like to add new patient?\n Enter YES to proceed else NO to quit:\n")
+#         if add_new_patient_prompt == "YES":
+#             current_time = input("What is the current time?\nIt should be less that patient's earliest time you will enter.:\n")
+#             new_patient = PatientData()
+#             new_patient.create_a_patient()
+#             print(new_patient.data_as_string())
             
-        elif add_new_patient_prompt == "NO":
-            pass
-        else:
-            add_new_patient_prompt = input("Would you like to add new patient?\n Enter YES to proceed else NO to quit:\n")
+#         elif add_new_patient_prompt == "NO":
+#             pass
+#         else:
+#             add_new_patient_prompt = input("Would you like to add new patient?\n Enter YES to proceed else NO to quit:\n")
         
-        print("Patient added:", add_new_patient_prompt)
+#         print("Patient added:", add_new_patient_prompt)
 
 # run_script()
 
